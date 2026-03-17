@@ -2,7 +2,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from 'expo-status-bar';
-import React, { useReducer, useState } from 'react';
+import React, { useMemo, useReducer, useState } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { FlatList, GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
@@ -19,10 +19,23 @@ const Progress = ({ current, meta, overDiet, height }) => {
   const reactive2 = React.useRef(new Animated.Value(-1000)).current;
 
   // Agora o denominador é SEMPRE a soma da meta com o excesso
-  const totalScale = current + overDiet;
+  const totalScale = React.useMemo(() => {
+    return current + overDiet;
+  }, [current, overDiet]);
 
   // A posição da meta na escala total
-  const markerPosition = current < meta ? width : (((meta+overDiet) / totalScale) * width);
+  const markerPosition = React.useMemo(() => {
+    // 1. Se ainda não atingiu a meta, o marcador fica no final da barra (width)
+    if (current < meta) {
+      return width;
+    }
+
+    // 2. Se ultrapassou, calcula a posição proporcional baseada no excesso
+    // Evitamos divisão por zero caso totalScale seja 0
+    if (totalScale === 0) return 0;
+
+    return ((meta + overDiet) / totalScale) * width;
+  }, [current, meta, overDiet, totalScale, width]);
 
   React.useEffect(()=>{
     Animated.timing(animatedValue, {
@@ -36,7 +49,7 @@ const Progress = ({ current, meta, overDiet, height }) => {
       duration: 300,
       useNativeDriver: true
     }).start()
-  }, []);
+  }, [overDiet]);
 
   React.useEffect(() => {
     if(current+overDiet > meta) {
@@ -46,7 +59,7 @@ const Progress = ({ current, meta, overDiet, height }) => {
       reactive.setValue(-width + width*(current) / meta)
       reactive2.setValue(-width + width*(current+overDiet) / meta)
     }
-  }, [current, width])
+  }, [current, width, overDiet])
 
   return (
     <View
@@ -151,6 +164,12 @@ const Progress = ({ current, meta, overDiet, height }) => {
 export default function HomeScreen() {
   const [checked, setChecked] = useState(false);
 
+  const [totalTraining, setTotalTraining] = useState(600);
+
+  const [totalDiet, setTotalDiet] = useState(1700)
+
+  const [totalMovement, setTotalMovement] = useState(150)
+
     const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
       case 'increment.training':
@@ -163,10 +182,37 @@ export default function HomeScreen() {
           ...state,
           training: state.training - action.payload
         }
+      case 'increment.diet':
+        return {
+          ...state,
+          diet: state.diet + action.payload
+        }
+      case 'decrement.diet': 
+        return {
+          ...state,
+          diet: state.diet - action.payload
+        }
+      case 'increment.movement':
+        return {
+          ...state,
+          movement: state.movement + action.payload
+        }
+      case 'decrement.movement': 
+        return {
+          ...state,
+          movement: state.movement - action.payload
+        }
     }
   }, {
-    training: 0
+    training: 600,
+    diet: 1700,
+    movement: 150
   })
+
+  const overDiet2 = useMemo(() => {
+  const diff = totalDiet - state.diet;
+  return diff < 0 ? diff * -1 : 0;
+}, [totalDiet, state.diet]);
 
 
   const renderActions = (isLastItem: Boolean, isFirstItem: Boolean) => (
@@ -195,18 +241,24 @@ export default function HomeScreen() {
       id: '1',
       title: 'Workout Muscle',
       value: 350,
+      type: 'training',
+      isChecked: true,
       subtitle: '350 kcal'
     },
     {
       id: '2',
       title: 'Cardio',
       value: 250,
+      type: 'training',
+      isChecked: true,
       subtitle: '250 kcal'
     },
     {
       id: '3',
       title: 'Daily Movement',
       value: 150,
+      type: 'movement',
+      isChecked: true,
       subtitle: '150 kcal'
     }
   ]
@@ -215,17 +267,29 @@ export default function HomeScreen() {
     {
       id: '1',
       title: 'Default Breakfast',
+      value: 500,
+      isChecked: true,
       subtitle: '500 kcal'
     },
     {
       id: '2',
       title: 'Default Lunch',
+      value: 600,
+      isChecked: true,
       subtitle: '600 kcal'
     },
     {
       id: '3',
       title: 'Default Dinner',
+      value: 600,
+      isChecked: true,
       subtitle: '600 kcal'
+    },
+    {
+      id: '4',
+      title: 'Chocolate Cake',
+      value: 300,
+      subtitle: '300 kcal'
     }
   ]
 
@@ -233,8 +297,6 @@ export default function HomeScreen() {
 
   const color = (r: number, g: number, b: number) =>
   `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
-
-  console.log()
 
   return (
     <Content>
@@ -249,21 +311,25 @@ export default function HomeScreen() {
       <Card style={{ display:'flex', flexDirection: 'row'}}>
         <View style={{height: 200, width: '50%' }}>
           <GestureHandlerRootView style={{height: 200 }}>
-            <Rings totalProgressMovement={state.training/450} />
+            <Rings 
+              totalProgressMovement={state.movement/totalMovement} 
+              totalTraining={state.training/totalTraining}
+              totalProgressDiet={state.diet/totalDiet}
+            />
           </GestureHandlerRootView>
         </View>
         <View style={{ display: 'flex', justifyContent: 'center', marginLeft: 10 }}>
           <View style={{ marginBottom: 10 }}>
             <Text style={{ fontSize: 15 }}>(-) Movement</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(77,94,10)` }}>{state.training}/450</Text>
+            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(77,94,10)` }}>{state.movement}/{totalMovement}</Text>
           </View>
           <View style={{ marginBottom: 10 }}>
             <Text style={{ fontSize: 15 }}>(+) Diet</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(141,49,17)` }}>1900/1700</Text>
+            <Text style={{ fontSize: 20, fontWeight: 500, color: state.diet > totalDiet ?  `rgb(141,49,17)` : `rgb(115,141,17)` }}>{state.diet}/{totalDiet}</Text>
           </View>
           <View>
             <Text style={{ fontSize: 15 }}>(-) Training</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(150,183,25)` }}>300/400</Text>
+            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(150,183,25)` }}>{state.training}/{totalTraining}</Text>
           </View>
         </View>
       </Card>
@@ -273,20 +339,20 @@ export default function HomeScreen() {
             <Text>Daily Meta</Text><Text style={{ fontWeight: 'bold', marginLeft: 5 }}>400 kcal</Text>
           </View>
           <StatusBar hidden />
-          <Progress current={1200} meta={400} overDiet={600} height={20} />
+          <Progress current={state.training+state.movement} meta={400} overDiet={overDiet2} height={20} />
         </View>
       </Card>
       <View style={{ display: 'flex', flexDirection: 'row', marginTop: 20, justifyContent: 'space-between' }}>
         <Card style={{ width: '48%', padding: 15 }}>
           <Text>Lost Calories</Text>
           <Text>
-          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>600</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
+          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{state.training+state.movement}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
           </Text>
         </Card>
         <Card style={{ width: '48%', padding: 15 }}>
           <Text>Over Diet</Text>
           <Text>
-            <Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', fontSize: 22 }}>200</Text><Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', }}> Kcal</Text>
+            <Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', fontSize: 22 }}>{overDiet2}</Text><Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', }}> Kcal</Text>
           </Text>
         </Card>
       </View>
@@ -332,6 +398,7 @@ export default function HomeScreen() {
                     <View style={{ borderRadius: 999 }}>
                       <BouncyCheckbox
                         size={30}
+                        isChecked={item.isChecked}
                         fillColor="black"
                         iconStyle={{
                           borderColor: "black",
@@ -342,12 +409,20 @@ export default function HomeScreen() {
                         text="Concordo com a Política de Privacidade"
                         onPress={
                           (isChecked) => {
+                            if(item.type === 'training') {
                             if(isChecked){
                               dispatch({ type: 'increment.training', payload: item.value })
                             } else {
                               dispatch({ type: 'decrement.training', payload: item.value })
                             }
+                          } else if(item.type === 'movement') {
+                            if(isChecked){
+                              dispatch({ type: 'increment.movement', payload: item.value })
+                            } else {
+                              dispatch({ type: 'decrement.movement', payload: item.value })
+                            }
                           }
+                        }
                         }
                       />
                     </View>
@@ -396,6 +471,7 @@ export default function HomeScreen() {
                     <View style={{ borderRadius: 999 }}>
                       <BouncyCheckbox
                         size={30}
+                        isChecked={item.isChecked}
                         fillColor="black"
                         iconStyle={{
                           borderColor: "black",
@@ -404,7 +480,15 @@ export default function HomeScreen() {
                         }}
                         innerIconStyle={{ borderWidth: 0 }}
                         text="Concordo com a Política de Privacidade"
-                        onPress={(isChecked) => {}}
+                        onPress={
+                          (isChecked) => {
+                            if(isChecked){
+                              dispatch({ type: 'increment.diet', payload: item.value })
+                            } else {
+                              dispatch({ type: 'decrement.diet', payload: item.value })
+                            }
+                          }
+                        }
                       />
                     </View>
                   </ContentItemTraining>

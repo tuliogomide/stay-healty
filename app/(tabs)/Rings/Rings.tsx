@@ -14,7 +14,9 @@ const color = (r: number, g: number, b: number) =>
   `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
 
 export const Rings = ({
-  totalProgressMovement = 0
+  totalProgressMovement = 0,
+  totalProgressDiet = 0,
+  totalTraining = 0
 }) => {
   const rings = [
   {
@@ -24,13 +26,15 @@ export const Rings = ({
     size: SIZE - strokeWidth * 4,
   },
   {
-    totalProgress: 1.2,
-    colors: [`rgb(141,49,17)`, `rgb(141,49,17)`], // rgb(115,141,17)
-    background: `rgb(221,194,184)`, // rgb(182,189,152)
+    totalProgress: totalProgressDiet,
+    colors: totalProgressDiet > 1 
+      ? [`rgb(141,49,17)`, `rgb(141,49,17)`] 
+      : [`rgb(115,141,17)`, `rgb(115,141,17)`],
+    background: totalProgressDiet > 1 ? `rgb(221,194,184)` : `rgb(182,189,152)`,
     size: SIZE - strokeWidth * 2,
   },
   {
-    totalProgress: 0.7,
+    totalProgress: totalTraining,
     colors: [`rgb(150,183,25)`, `rgb(150,183,25)`],
     background: `rgb(192,202,155)`,
     size: SIZE,

@@ -18,6 +18,12 @@ import {
 
 import { frag } from "../components";
 
+// --- Helpers ---
+const fromCircle = (center: Vector, r: number) => {
+  "worklet";
+  return Skia.XYWHRect(center.x - r, center.y - r, r * 2, r * 2);
+};
+
 const source = frag`
 uniform shader image;
 uniform vec2 head;
@@ -48,22 +54,15 @@ vec4 main(vec2 xy) {
 }
 `;
 
-const fromCircle = (center: Vector, r: number) => {
-  "worklet";
-  return Skia.XYWHRect(center.x - r, center.y - r, r * 2, r * 2);
-};
-
-interface Ring {
-  colors: string[];
-  background: string;
-  size: number;
-  totalProgress: number;
-}
-
 interface RingProps {
-  ring: Ring;
   center: Vector;
   strokeWidth: number;
+  ring: {
+    size: number;
+    background: string;
+    totalProgress: number;
+    colors: string[];
+  };
 }
 
 export const Ring = ({
@@ -71,76 +70,88 @@ export const Ring = ({
   strokeWidth,
   ring: { size, background, totalProgress, colors },
 }: RingProps) => {
-  const trim = useSharedValue(0);
+  // 1. Para garantir a transição inicial, começamos o sharedValue em 0
+  // Se você preferir que ele já apareça no valor atual sem animar no início, 
+  // mude para useSharedValue(totalProgress)
+  const animatedProgress = useSharedValue(0); 
   const r = size / 2 - strokeWidth / 2;
+
+  // 2. Este useEffect garante a transição inicial (mount) e as atualizações (update)
+  useEffect(() => {
+    animatedProgress.value = withTiming(totalProgress, { duration: 1500 });
+  }, [totalProgress, animatedProgress]);
+
   const clip = useMemo(() => {
-    const outerCircle = Skia.Path.Make();
-    outerCircle.addCircle(center.x, center.y, size / 2);
-    const innerCircle = Skia.Path.Make();
-    innerCircle.addCircle(center.x, center.y, size / 2 - strokeWidth);
-    return Skia.Path.MakeFromOp(outerCircle, innerCircle, PathOp.Difference)!;
+    const outer = Skia.Path.Make();
+    outer.addCircle(center.x, center.y, size / 2);
+    const inner = Skia.Path.Make();
+    inner.addCircle(center.x, center.y, size / 2 - strokeWidth);
+    return Skia.Path.MakeFromOp(outer, inner, PathOp.Difference) || outer;
   }, [center.x, center.y, size, strokeWidth]);
-  const fullPath = useMemo(() => {
-    const path = Skia.Path.Make();
-    const fullRevolutions = Math.floor(totalProgress);
-    for (let i = 0; i < fullRevolutions; i++) {
-      path.addCircle(center.x, center.y, r);
-    }
-    path.addArc(fromCircle(center, r), 0, 360 * (totalProgress % 1));
-    return path;
-  }, [center, r, totalProgress]);
+
   const path = useDerivedValue(() => {
-    if (trim.value < 1) {
-      return fullPath.copy().trim(0, trim.value, false)!;
+    const p = Skia.Path.Make();
+    const current = animatedProgress.value;
+
+    if (current <= 0.001) return p;
+
+    const fullRevolutions = Math.floor(current);
+    for (let i = 0; i < fullRevolutions; i++) {
+      p.addCircle(center.x, center.y, r);
     }
-    return fullPath;
+
+    const rest = current % 1;
+    if (rest > 0.001 || (current > 0 && current < 1)) {
+      p.addArc(fromCircle(center, r), 0, 360 * (rest || current));
+    }
+    return p;
   });
 
   const matrix = useDerivedValue(() => {
     const m = Skia.Matrix();
-    const progress = trim.value * totalProgress;
-    const angle = progress < 1 ? 0 : (progress % 1) * 2 * Math.PI;
-    if (angle > 0) {
-      m.translate(center.x, center.y);
-      m.rotate(angle);
-      m.translate(-center.x, -center.y);
-    }
+    const angle = (animatedProgress.value % 1) * 2 * Math.PI;
+    m.translate(center.x, center.y);
+    m.rotate(angle);
+    m.translate(-center.x, -center.y);
     return m;
   });
-  const uniforms = useDerivedValue(() => {
-    const head = path.value.getLastPt();
-    return {
-      head,
-      r: strokeWidth / 2,
-      progress: trim.value * totalProgress,
-      color: [...Skia.Color(colors[1])],
-    };
+
+  const uniforms = useDerivedValue(() => ({
+    head: path.value.getLastPt(),
+    r: strokeWidth / 2,
+    progress: animatedProgress.value,
+    color: [...Skia.Color(colors[1])],
+  }));
+
+  // Controla a visibilidade para não aparecer o "pingo" quando estiver zerado
+  const layerPaint = useDerivedValue(() => {
+    const paint = Skia.Paint();
+    paint.setAlphaf(animatedProgress.value > 0.001 ? 1 : 0);
+    return paint;
   });
-  useEffect(() => {
-    trim.value = withTiming(1, { duration: 3000 });
-  }, [trim]);
+
+  const startPoint = useMemo(() => ({ x: center.x + r, y: center.y }), [center, r]);
+
   return (
     <Group transform={[{ rotate: -Math.PI / 2 }]} origin={center}>
       <Group clip={clip}>
         <Fill color={background} />
-        <Circle
-          c={fullPath.getPoint(0)}
-          r={strokeWidth / 2}
-          color={colors[0]}
-        />
-        <Path
-          path={path}
-          strokeWidth={strokeWidth}
-          style="stroke"
-          color={colors[0]}
-        >
-          <SweepGradient colors={colors} c={center} matrix={matrix} />
-        </Path>
-        <Fill>
-          <Shader source={source} uniforms={uniforms}>
+        <Group layer={layerPaint}>
+          <Circle c={startPoint} r={strokeWidth / 2} color={colors[0]} />
+          <Path
+            path={path}
+            strokeWidth={strokeWidth}
+            style="stroke"
+            strokeCap="round"
+          >
             <SweepGradient colors={colors} c={center} matrix={matrix} />
-          </Shader>
-        </Fill>
+          </Path>
+          <Fill>
+            <Shader source={source} uniforms={uniforms}>
+              <SweepGradient colors={colors} c={center} matrix={matrix} />
+            </Shader>
+          </Fill>
+        </Group>
       </Group>
     </Group>
   );

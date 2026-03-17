@@ -13,6 +13,7 @@ export const Content = styled.ScrollView`
   padding-left: 20px;
   padding-right: 20px;
   background-color: #DEDEDE;
+  paddin-bottom: 600px;
 `
 
 export const Card = styled.View`
