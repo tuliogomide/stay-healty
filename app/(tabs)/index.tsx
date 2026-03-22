@@ -2,14 +2,28 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from 'expo-status-bar';
-import React, { useMemo, useReducer, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { FlatList, GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
+import { useDispatch, useSelector } from 'react-redux';
+import { decrementDiet, decrementMovement, decrementTraining, incrementDiet, incrementMovement, incrementTraining } from '../store/ducks/plainFitness';
 import { Rings } from './Rings';
 import { Card, Content, ContentItemTraining, DeleteButton, ItemTraining, TextSection, TitleSection } from './style';
 
-const Progress = ({ current, meta, overDiet, height }) => {
+interface ProgressProps {
+  current: number;
+  meta: number;
+  overDiet: number;
+  height?: number; // O '?' torna a propriedade opcional
+}
+
+const Progress = ({ 
+  current, 
+  meta, 
+  overDiet, 
+  height 
+}: ProgressProps) => {
   const [width, setWidth] = React.useState(0);
 
   const animatedValue = React.useRef(new Animated.Value(-1000)).current;
@@ -170,49 +184,13 @@ export default function HomeScreen() {
 
   const [totalMovement, setTotalMovement] = useState(150)
 
-    const [state, dispatch] = useReducer((state, action) => {
-    switch (action.type) {
-      case 'increment.training':
-        return {
-          ...state,
-          training: state.training + action.payload
-        }
-      case 'decrement.training': 
-        return {
-          ...state,
-          training: state.training - action.payload
-        }
-      case 'increment.diet':
-        return {
-          ...state,
-          diet: state.diet + action.payload
-        }
-      case 'decrement.diet': 
-        return {
-          ...state,
-          diet: state.diet - action.payload
-        }
-      case 'increment.movement':
-        return {
-          ...state,
-          movement: state.movement + action.payload
-        }
-      case 'decrement.movement': 
-        return {
-          ...state,
-          movement: state.movement - action.payload
-        }
-    }
-  }, {
-    training: 600,
-    diet: 1700,
-    movement: 150
-  })
+  const dispatch = useDispatch()
+  const plainFitness = useSelector((state: any) => state.plainFitness)
 
   const overDiet2 = useMemo(() => {
-  const diff = totalDiet - state.diet;
+  const diff = totalDiet - plainFitness.diet;
   return diff < 0 ? diff * -1 : 0;
-}, [totalDiet, state.diet]);
+}, [totalDiet, plainFitness.diet]);
 
 
   const renderActions = (isLastItem: Boolean, isFirstItem: Boolean) => (
@@ -236,63 +214,6 @@ export default function HomeScreen() {
     </View>
   )
 
-  const DATA_TRAININGS = [
-    {
-      id: '1',
-      title: 'Workout Muscle',
-      value: 350,
-      type: 'training',
-      isChecked: true,
-      subtitle: '350 kcal'
-    },
-    {
-      id: '2',
-      title: 'Cardio',
-      value: 250,
-      type: 'training',
-      isChecked: true,
-      subtitle: '250 kcal'
-    },
-    {
-      id: '3',
-      title: 'Daily Movement',
-      value: 150,
-      type: 'movement',
-      isChecked: true,
-      subtitle: '150 kcal'
-    }
-  ]
-
-  const DATA_DIETS = [
-    {
-      id: '1',
-      title: 'Default Breakfast',
-      value: 500,
-      isChecked: true,
-      subtitle: '500 kcal'
-    },
-    {
-      id: '2',
-      title: 'Default Lunch',
-      value: 600,
-      isChecked: true,
-      subtitle: '600 kcal'
-    },
-    {
-      id: '3',
-      title: 'Default Dinner',
-      value: 600,
-      isChecked: true,
-      subtitle: '600 kcal'
-    },
-    {
-      id: '4',
-      title: 'Chocolate Cake',
-      value: 300,
-      subtitle: '300 kcal'
-    }
-  ]
-
   const Stack = createStackNavigator();
 
   const color = (r: number, g: number, b: number) =>
@@ -312,24 +233,24 @@ export default function HomeScreen() {
         <View style={{height: 200, width: '50%' }}>
           <GestureHandlerRootView style={{height: 200 }}>
             <Rings 
-              totalProgressMovement={state.movement/totalMovement} 
-              totalTraining={state.training/totalTraining}
-              totalProgressDiet={state.diet/totalDiet}
+              totalProgressMovement={plainFitness.movement/totalMovement} 
+              totalTraining={plainFitness.training/totalTraining}
+              totalProgressDiet={plainFitness.diet/totalDiet}
             />
           </GestureHandlerRootView>
         </View>
         <View style={{ display: 'flex', justifyContent: 'center', marginLeft: 10 }}>
           <View style={{ marginBottom: 10 }}>
             <Text style={{ fontSize: 15 }}>(-) Movement</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(77,94,10)` }}>{state.movement}/{totalMovement}</Text>
+            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(77,94,10)` }}>{plainFitness.movement}/{totalMovement}</Text>
           </View>
           <View style={{ marginBottom: 10 }}>
             <Text style={{ fontSize: 15 }}>(+) Diet</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: state.diet > totalDiet ?  `rgb(141,49,17)` : `rgb(115,141,17)` }}>{state.diet}/{totalDiet}</Text>
+            <Text style={{ fontSize: 20, fontWeight: 500, color: plainFitness.diet > totalDiet ?  `rgb(141,49,17)` : `rgb(115,141,17)` }}>{plainFitness.diet}/{totalDiet}</Text>
           </View>
           <View>
             <Text style={{ fontSize: 15 }}>(-) Training</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(150,183,25)` }}>{state.training}/{totalTraining}</Text>
+            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(150,183,25)` }}>{plainFitness.training}/{totalTraining}</Text>
           </View>
         </View>
       </Card>
@@ -339,14 +260,14 @@ export default function HomeScreen() {
             <Text>Daily Meta</Text><Text style={{ fontWeight: 'bold', marginLeft: 5 }}>400 kcal</Text>
           </View>
           <StatusBar hidden />
-          <Progress current={state.training+state.movement} meta={400} overDiet={overDiet2} height={20} />
+          <Progress current={plainFitness.training+plainFitness.movement} meta={400} overDiet={overDiet2} height={20} />
         </View>
       </Card>
       <View style={{ display: 'flex', flexDirection: 'row', marginTop: 20, justifyContent: 'space-between' }}>
         <Card style={{ width: '48%', padding: 15 }}>
           <Text>Lost Calories</Text>
           <Text>
-          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{state.training+state.movement}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
+          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{plainFitness.training+plainFitness.movement}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
           </Text>
         </Card>
         <Card style={{ width: '48%', padding: 15 }}>
@@ -367,27 +288,27 @@ export default function HomeScreen() {
       <Card>
         <GestureHandlerRootView>
           <FlatList
-            data={DATA_TRAININGS}
+            data={plainFitness.dataTraining}
             scrollEnabled={false}
             keyExtractor={(item) => item.id}
             renderItem={({ item, index }) => (
               <Swipeable
                 renderRightActions={() =>
                   renderActions(
-                    index === DATA_TRAININGS.length - 1 ? true : false,
+                    index === plainFitness.dataTraining.length - 1 ? true : false,
                     index === 0 ? true : false
                   )
                 }
               >
                 <ItemTraining
                   isLastItem={
-                    index === DATA_TRAININGS.length - 1 ? true : false
+                    index === plainFitness.dataTraining.length - 1 ? true : false
                   }
                   isFirstItem={index === 0 ? true : false}
                 >
                   <ContentItemTraining
                     isLastItem={
-                      index === DATA_TRAININGS.length - 1 ? true : false
+                      index === plainFitness.dataTraining.length - 1 ? true : false
                     }
                     isFirstItem={index === 0 ? true : false}
                   >
@@ -411,15 +332,15 @@ export default function HomeScreen() {
                           (isChecked) => {
                             if(item.type === 'training') {
                             if(isChecked){
-                              dispatch({ type: 'increment.training', payload: item.value })
+                              dispatch(incrementTraining(item.value))
                             } else {
-                              dispatch({ type: 'decrement.training', payload: item.value })
+                              dispatch(decrementTraining(item.value))
                             }
                           } else if(item.type === 'movement') {
                             if(isChecked){
-                              dispatch({ type: 'increment.movement', payload: item.value })
+                              dispatch(incrementMovement(item.value))
                             } else {
-                              dispatch({ type: 'decrement.movement', payload: item.value })
+                              dispatch(decrementMovement(item.value))
                             }
                           }
                         }
@@ -437,30 +358,30 @@ export default function HomeScreen() {
         <IconSymbol size={35} name="leaf.fill" color={Colors.light.tint} />
         <TextSection>Diet</TextSection>
       </TitleSection>
-      <Card>
+      <Card style={{ marginBottom: 100 }}>
         <GestureHandlerRootView>
           <FlatList
-            data={DATA_DIETS}
+            data={plainFitness.dataDiet}
             scrollEnabled={false}
             keyExtractor={(item) => item.id}
             renderItem={({ item, index }) => (
               <Swipeable
                 renderRightActions={() =>
                   renderActions(
-                    index === DATA_TRAININGS.length - 1 ? true : false,
+                    index === plainFitness.dataDiet.length - 1 ? true : false,
                     index === 0 ? true : false
                   )
                 }
               >
                 <ItemTraining
                   isLastItem={
-                    index === DATA_TRAININGS.length - 1 ? true : false
+                    index === plainFitness.dataDiet.length - 1 ? true : false
                   }
                   isFirstItem={index === 0 ? true : false}
                 >
                   <ContentItemTraining
                     isLastItem={
-                      index === DATA_TRAININGS.length - 1 ? true : false
+                      index === plainFitness.dataDiet.length - 1 ? true : false
                     }
                     isFirstItem={index === 0 ? true : false}
                   >
@@ -483,9 +404,9 @@ export default function HomeScreen() {
                         onPress={
                           (isChecked) => {
                             if(isChecked){
-                              dispatch({ type: 'increment.diet', payload: item.value })
+                              dispatch(incrementDiet(item.value))
                             } else {
-                              dispatch({ type: 'decrement.diet', payload: item.value })
+                              dispatch(decrementDiet(item.value))
                             }
                           }
                         }
