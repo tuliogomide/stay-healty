@@ -103,6 +103,10 @@ export const {
   incrementDiet,
   decrementDiet,
   incrementMovement,
-  decrementMovement
+  decrementMovement,
+  addTraining,
+  addDiet,
+  removeTraining,
+  removeDiet
 } = counterSlice.actions
 export default counterSlice.reducer

@@ -4,14 +4,15 @@ import { ChartDataPoint, Host, Picker } from '@expo/ui/swift-ui';
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo, useState } from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { FlatList, GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import { decrementDiet, decrementMovement, decrementTraining, incrementDiet, incrementMovement, incrementTraining } from '../store/ducks/plainFitness';
 import BarChart from './components/bar-cart';
+import RenderActions from './components/render-actions';
 import { Rings } from './Rings';
-import { Card, Content, ContentItemTraining, DeleteButton, ItemTraining, TextSection, TitleSection } from './style';
+import { Card, Content, ContentItemTraining, ItemTraining, TextSection, TitleSection } from './style';
 
 interface ProgressProps {
   current: number;
@@ -194,28 +195,6 @@ export default function HomeScreen() {
   return diff < 0 ? diff * -1 : 0;
 }, [totalDiet, plainFitness.diet]);
 
-
-  const renderActions = (isLastItem: Boolean, isFirstItem: Boolean) => (
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity style={[styles.button, styles.edit]}>
-        <IconSymbol
-          size={20}
-          name="pencil.tip"
-          color={'white'}
-        />
-        <Text style={{ color: 'white', fontSize: 10 }}>Edit</Text>
-      </TouchableOpacity>
-      <DeleteButton isLastItem={isLastItem} isFirstItem={isFirstItem}>
-        <IconSymbol
-          size={20}
-          name="trash"
-          color={'white'}
-        />
-        <Text style={{ color: 'white', fontSize: 10 }}>Delete</Text>
-      </DeleteButton>
-    </View>
-  )
-
   const Stack = createStackNavigator();
 
   const color = (r: number, g: number, b: number) =>
@@ -370,10 +349,10 @@ export default function HomeScreen() {
             renderItem={({ item, index }) => (
               <Swipeable
                 renderRightActions={() =>
-                  renderActions(
-                    index === plainFitness.dataTraining.length - 1 ? true : false,
-                    index === 0 ? true : false
-                  )
+                  <RenderActions
+                    isLastItem={index === plainFitness.dataTraining.length - 1 ? true : false}
+                    isFirstItem={index === 0 ? true : false}
+                  />
                 }
               >
                 <ItemTraining
@@ -443,10 +422,10 @@ export default function HomeScreen() {
             renderItem={({ item, index }) => (
               <Swipeable
                 renderRightActions={() =>
-                  renderActions(
-                    index === plainFitness.dataDiet.length - 1 ? true : false,
-                    index === 0 ? true : false
-                  )
+                  <RenderActions
+                    isLastItem={index === plainFitness.dataDiet.length - 1 ? true : false}
+                    isFirstItem={index === 0 ? true : false}
+                  />
                 }
               >
                 <ItemTraining
