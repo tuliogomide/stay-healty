@@ -1,5 +1,6 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { ChartDataPoint, Host, Picker } from '@expo/ui/swift-ui';
 import { createStackNavigator } from "@react-navigation/stack";
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo, useState } from 'react';
@@ -8,6 +9,7 @@ import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { FlatList, GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import { decrementDiet, decrementMovement, decrementTraining, incrementDiet, incrementMovement, incrementTraining } from '../store/ducks/plainFitness';
+import BarChart from './components/bar-cart';
 import { Rings } from './Rings';
 import { Card, Content, ContentItemTraining, DeleteButton, ItemTraining, TextSection, TitleSection } from './style';
 
@@ -219,6 +221,61 @@ export default function HomeScreen() {
   const color = (r: number, g: number, b: number) =>
   `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
 
+  const [dataSetIndex, setDataSetIndex] = useState(0);
+  const dataSetOptions = ["Today", "Week", "Month"];
+
+  const chartType: String = dataSetOptions[dataSetIndex];
+
+  const weekData: ChartDataPoint[] = [
+    { x: "Mon", y: 400 },
+    { x: "Tue", y: 450 },
+    { x: "Wed", y: 420 },
+    { x: "Thu", y: 430 },
+    { x: "Fri", y: 480 },
+    { x: "Sat", y: 350 },
+    { x: "Sun", y: 300 },
+  ];
+
+  const generateMonthData = () => {
+  const daysInMonth = 30;
+  const data: ChartDataPoint[] = [];
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    // TRUQUE: Para os dias que não queremos o número, enviamos 
+    // uma quantidade de espaços vazios igual ao número do dia.
+    // O SwiftUI entende como um ID único, mas o usuário não vê nada.
+    const label = i;
+
+    data.push({
+      x: String(label), 
+      y: (Math.floor(Math.random() * (5 - 2 + 1)) + 2) * 100
+    });
+  }
+  return data;
+};
+
+  const monthData = generateMonthData();
+
+  const lostCalories = () => {
+    if(chartType === "Today") {
+      return plainFitness.training + plainFitness.movement
+    } else if(chartType === "Week") {
+      return weekData.reduce((acc, item) => acc + item.y, 0)
+    } else if(chartType === "Month") {
+      return monthData.reduce((acc, item) => acc + item.y, 0)
+    }
+  }
+
+   const totalOverDiet = () => {
+    if(chartType === "Today") {
+      return overDiet2
+    } else if(chartType === "Week") {
+      return 300
+    } else if(chartType === "Month") {
+      return 900
+    }
+   }
+
   return (
     <Content>
       <TitleSection>
@@ -229,6 +286,25 @@ export default function HomeScreen() {
         />
         <TextSection>Summary</TextSection>
       </TitleSection>
+      <View style={styles.pickerContainer}>
+        <Host matchContents>
+          <Picker
+            options={dataSetOptions}
+            selectedIndex={dataSetIndex}
+            onOptionSelected={({ nativeEvent: { index } }) => {
+              setDataSetIndex(index);
+            }}
+            variant="segmented"
+          />
+        </Host>
+      </View>
+      {(chartType === "Week" || chartType === "Month")  && (<Card style={{ display:'flex', flex: 1, }}>
+        <View style={styles.chartContainer}>
+            <BarChart rawMonthData={chartType === "Week" ? weekData : monthData} />
+        </View>
+      </Card>)}
+      {chartType === "Today" && (
+        <>
       <Card style={{ display:'flex', flexDirection: 'row'}}>
         <View style={{height: 200, width: '50%' }}>
           <GestureHandlerRootView style={{height: 200 }}>
@@ -262,18 +338,18 @@ export default function HomeScreen() {
           <StatusBar hidden />
           <Progress current={plainFitness.training+plainFitness.movement} meta={400} overDiet={overDiet2} height={20} />
         </View>
-      </Card>
+      </Card></>)}
       <View style={{ display: 'flex', flexDirection: 'row', marginTop: 20, justifyContent: 'space-between' }}>
         <Card style={{ width: '48%', padding: 15 }}>
           <Text>Lost Calories</Text>
           <Text>
-          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{plainFitness.training+plainFitness.movement}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
+          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{lostCalories()}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
           </Text>
         </Card>
         <Card style={{ width: '48%', padding: 15 }}>
           <Text>Over Diet</Text>
           <Text>
-            <Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', fontSize: 22 }}>{overDiet2}</Text><Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', }}> Kcal</Text>
+            <Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', fontSize: 22 }}>{totalOverDiet()}</Text><Text style={{ color: 'rgb(141,49,17)', fontWeight: 'bold', }}> Kcal</Text>
           </Text>
         </Card>
       </View>
@@ -441,5 +517,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 10
+  },
+  pickerContainer: {
+    marginBottom: 16,
+  },
+  chartContainer: {
+    height: 250,
+    width: '100%',
+    borderRadius: 12,
+    padding: 16,
+  },
+  chart: {
+    flex: 1,
   }
 })
