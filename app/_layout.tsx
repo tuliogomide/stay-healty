@@ -14,6 +14,12 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
+    const rawTheme = useColorScheme();
+    const theme = rawTheme === "dark" ? "dark" : "light";
+    const isGlassAvailable = isLiquidGlassAvailable();
+    const blurEffect =
+      theme === "dark" ? "systemMaterialDark" : "systemMaterialLight";
+
   return (
     <Provider store={store}>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -21,9 +27,16 @@ export default function RootLayout() {
           <Stack.Screen
             name="(tabs)"
             options={{
-              headerShown: false,
+              title: "",
+              headerLargeTitle: false,
+              headerShown: true,
+              headerTransparent: true,
+              navigationBarTranslucent: false,
+              headerTintColor: theme === "dark" ? "white" : "black",
+              headerLargeStyle: { backgroundColor: "transparent" },
+              headerBlurEffect: isGlassAvailable ? undefined : blurEffect,
               contentStyle: {
-                backgroundColor: '#dededeca'
+                backgroundColor: '#dededeca',
               }
             }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />

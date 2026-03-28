@@ -8,18 +8,8 @@ interface ListItemProps {
   isFirstItem: Boolean;
 }
 
-export const ContentPage = styled.SafeAreaView`
-  flex: 1;
-  padding-left: 20px;
-  padding-right: 20px;
-  background-color: transparent;
-  background-color: #DEDEDE;
-  paddin-bottom: 600px;
-`
-
 export const Content = styled.ScrollView`
   flex: 1;
-  margin-top: 40px;
   padding-left: 20px;
   padding-right: 20px;
   paddin-bottom: 600px;

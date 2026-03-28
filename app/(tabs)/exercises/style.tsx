@@ -19,7 +19,6 @@ export const ContentPage = styled.SafeAreaView`
 
 export const Content = styled.ScrollView`
   flex: 1;
-  margin-top: 40px;
   padding-left: 20px;
   padding-right: 20px;
   paddin-bottom: 600px;

@@ -23,11 +23,11 @@ export default function TabLayout() {
         <Label>Home</Label>
         <Icon sf="house.fill" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="exercises/index">
+      <NativeTabs.Trigger name="exercises">
         <Label>Training</Label>
         <Icon sf="figure.run.circle.fill" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="diets/index">
+      <NativeTabs.Trigger name="diets">
         <Icon sf="leaf.fill" drawable="custom_settings_drawable" />
         <Label>Diet</Label>
       </NativeTabs.Trigger>

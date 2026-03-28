@@ -27,7 +27,6 @@ export const TitleSection = styled.View`
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding-top: 20px;
   padding-bottom: 20px;
 `
 
