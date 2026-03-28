@@ -19,7 +19,7 @@ export default function TabLayout() {
       }}
       tintColor={Colors.light.tint}
     >
-      <NativeTabs.Trigger name="index">
+      <NativeTabs.Trigger name="home">
         <Label>Home</Label>
         <Icon sf="house.fill" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>

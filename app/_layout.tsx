@@ -24,21 +24,6 @@ export default function RootLayout() {
     <Provider store={store}>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              title: "",
-              headerLargeTitle: false,
-              headerShown: true,
-              headerTransparent: true,
-              navigationBarTranslucent: false,
-              headerTintColor: theme === "dark" ? "white" : "black",
-              headerLargeStyle: { backgroundColor: "transparent" },
-              headerBlurEffect: isGlassAvailable ? undefined : blurEffect,
-              contentStyle: {
-                backgroundColor: '#dededeca',
-              }
-            }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
           <Stack.Screen
             name="sheet"

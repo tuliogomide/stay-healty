@@ -1,14 +1,13 @@
 import { useColorScheme } from "@/hooks/use-color-scheme.web";
 import { isLiquidGlassAvailable } from "expo-glass-effect";
-import { Stack, useRouter } from "expo-router";
+import { Stack } from "expo-router";
 
-export default function ExercisesLayout() {
+export default function HomeLayout() {
   const rawTheme = useColorScheme();
   const theme = rawTheme === "dark" ? "dark" : "light";
   const isGlassAvailable = isLiquidGlassAvailable();
   const blurEffect =
     theme === "dark" ? "systemMaterialDark" : "systemMaterialLight";
-  const router = useRouter();
 
   return (
     <Stack>

@@ -14,25 +14,6 @@ export default function Trainings() {
   const dispatch = useDispatch()
   const plainFitness = useSelector((state: any) => state.plainFitness)
 
-  /*
-    unstable_headerRightItems: (props) => [
-            {
-              type: "custom",
-              onPress: onGoToTraining,
-              hidesSharedBackground: true,
-              element: (
-                <Pressable onPress={onGoToTraining}>
-                <IconSymbol
-                  size={35}
-                  name="plus"
-                  color={Colors.light.tint}
-                />
-                </Pressable>
-              )
-            }
-          ],
-  */
-
   const navigation = useNavigation();
   const router = useRouter();
 

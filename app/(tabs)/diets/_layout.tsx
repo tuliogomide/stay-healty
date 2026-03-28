@@ -5,7 +5,7 @@ import { isLiquidGlassAvailable } from "expo-glass-effect";
 import { Stack, useRouter } from "expo-router";
 import { GestureHandlerRootView, TouchableOpacity } from 'react-native-gesture-handler';
 
-export default function HomeLayout() {
+export default function DiestsLayout() {
   const rawTheme = useColorScheme();
   const theme = rawTheme === "dark" ? "dark" : "light";
   const isGlassAvailable = isLiquidGlassAvailable();
