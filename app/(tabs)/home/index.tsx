@@ -257,7 +257,7 @@ export default function HomeScreen() {
 
   return (
     <Content>
-      <TitleSection>
+      <TitleSection style={{ paddingTop: 0 }}>
         <IconSymbol
           size={35}
           name="list.bullet.clipboard.fill"
