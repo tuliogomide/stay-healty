@@ -1,5 +1,5 @@
 # Welcome to your Expo app 👋
-# 🥗 Stay Healty Pro:
+# 🥗 Stay Healty IA Pro:
 
 ## 📖 About the Application
 
@@ -15,6 +15,8 @@ By leveraging a high-performance technology stack, the app provides a visceral, 
 ## 🚀 Technical Stack (The "How")
 
 This project pushes the boundaries of React Native performance to deliver a premium, fluid user experience:
+
+* **[Local IA Vision Computing](https://docs.swmansion.com/react-native-executorch/):** Using a directly mobile device IA for vision computing with native hardware and software features. 
 
 * **[Expo](https://expo.dev/):** Our robust foundation for universal React development and streamlined tooling.
 
