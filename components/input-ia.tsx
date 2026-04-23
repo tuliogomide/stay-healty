@@ -110,7 +110,7 @@ export default function InputIA({ setCalories, setName, setIngredients }: { setC
           <TextInput
             style={styles.input}
             aria-disabled={false}
-            placeholder="Digite sua mensagem..."
+            placeholder="Describe your meal..."
             value={value}
             onChangeText={setValue}
             multiline
@@ -139,14 +139,14 @@ export default function InputIA({ setCalories, setName, setIngredients }: { setC
           </Text>
         </View> */}
         {!llm.isReady && (
-        <View style={{ fontWeight: "bold", alignItems: "center", marginTop: 20 }}>
-          <Text>Carregando Modelo de IA</Text>
+        <View style={{ alignItems: "center", marginTop: 20 }}>
+          <Text style={{ fontWeight: "bold" }}>Loading IA Model</Text>
           <Text>
-            Isso pode levar alguns minutos na primeira vez...
+            This may take a few minutes on the first use...
           </Text>
           {llm.error && (
             <Text>
-              Erro ao carregar modelo: {String(llm.error)}
+              Error loading model: {String(llm.error)}
             </Text>
           )}
         </View>

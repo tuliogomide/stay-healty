@@ -3,16 +3,16 @@ import { createSlice } from "@reduxjs/toolkit";
 export const counterSlice = createSlice({
   name: 'counter',
   initialState: {
-    training: 600,
+    training: 0,
     diet: 1700,
-    movement: 150,
+    movement: 0,
     dataTraining: [
       {
         id: '1',
         title: 'Workout Muscle',
         value: 350,
         type: 'training',
-        isChecked: true,
+        isChecked: false,
         subtitle: '350 kcal'
       },
       {
@@ -20,7 +20,7 @@ export const counterSlice = createSlice({
         title: 'Cardio',
         value: 250,
         type: 'training',
-        isChecked: true,
+        isChecked: false,
         subtitle: '250 kcal'
       },
       {
@@ -28,7 +28,7 @@ export const counterSlice = createSlice({
         title: 'Daily Movement',
         value: 150,
         type: 'movement',
-        isChecked: true,
+        isChecked: false,
         subtitle: '150 kcal'
       }
     ],
@@ -58,6 +58,7 @@ export const counterSlice = createSlice({
           id: '4',
           title: 'Chocolate Cake',
           value: 300,
+          isChecked: false,
           subtitle: '300 kcal'
         }
       ]

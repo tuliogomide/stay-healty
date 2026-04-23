@@ -21,11 +21,11 @@ interface ProgressProps {
   height?: number; // O '?' torna a propriedade opcional
 }
 
-const Progress = ({ 
-  current, 
-  meta, 
-  overDiet, 
-  height 
+const Progress = ({
+  current,
+  meta,
+  overDiet,
+  height
 }: ProgressProps) => {
   const [width, setWidth] = React.useState(0);
 
@@ -54,7 +54,7 @@ const Progress = ({
     return ((meta + overDiet) / totalScale) * width;
   }, [current, meta, overDiet, totalScale, width]);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: reactive,
       duration: 300,
@@ -69,25 +69,25 @@ const Progress = ({
   }, [overDiet]);
 
   React.useEffect(() => {
-    if(current+overDiet > meta) {
-      reactive.setValue(-width + width*(current) / (current+overDiet))
-      reactive2.setValue(-width + width*(current+overDiet) / (current+overDiet))
+    if (current + overDiet > meta) {
+      reactive.setValue(-width + width * (current) / (current + overDiet))
+      reactive2.setValue(-width + width * (current + overDiet) / (current + overDiet))
     } else {
-      reactive.setValue(-width + width*(current) / meta)
-      reactive2.setValue(-width + width*(current+overDiet) / meta)
+      reactive.setValue(-width + width * (current) / meta)
+      reactive2.setValue(-width + width * (current + overDiet) / meta)
     }
   }, [current, width, overDiet])
 
   return (
     <View
-    onLayout={
-      (e) => {
-        const newWidth = e.nativeEvent.layout.width;
-        setWidth(newWidth)
+      onLayout={
+        (e) => {
+          const newWidth = e.nativeEvent.layout.width;
+          setWidth(newWidth)
+        }
       }
-    }
-    style={{
-        marginTop: 25, // Abre espaço para o balão não sumir dentro do Card
+      style={{
+        marginTop: 15, // Abre espaço para o balão não sumir dentro do Card
         width: '100%',
         position: 'relative'
       }}>
@@ -127,38 +127,38 @@ const Progress = ({
         borderRadius: height,
         overflow: 'hidden',
       }}>
-      <Animated.View
-        style={{
-          height,
-          width: '100%',
-          borderRadius: height,
-          backgroundColor: 'rgb(141,49,17)',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          transform: [
-            {
-              translateX: animatedValue2
-            }
-          ]
-        }}
-      />
-      <Animated.View
-        style={{
-          height,
-          width: '100%',
-          borderRadius: height,
-          backgroundColor: 'rgb(150,183,25)',
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          transform: [
-            {
-              translateX: animatedValue
-            }
-          ]
-        }}
-      />
+        <Animated.View
+          style={{
+            height,
+            width: '100%',
+            borderRadius: height,
+            backgroundColor: 'rgb(141,49,17)',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            transform: [
+              {
+                translateX: animatedValue2
+              }
+            ]
+          }}
+        />
+        <Animated.View
+          style={{
+            height,
+            width: '100%',
+            borderRadius: height,
+            backgroundColor: 'rgb(150,183,25)',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            transform: [
+              {
+                translateX: animatedValue
+              }
+            ]
+          }}
+        />
         <View
           style={{
             position: 'absolute',
@@ -191,14 +191,14 @@ export default function HomeScreen() {
   const plainFitness = useSelector((state: any) => state.plainFitness)
 
   const overDiet2 = useMemo(() => {
-  const diff = totalDiet - plainFitness.diet;
-  return diff < 0 ? diff * -1 : 0;
-}, [totalDiet, plainFitness.diet]);
+    const diff = totalDiet - plainFitness.diet;
+    return diff < 0 ? diff * -1 : 0;
+  }, [totalDiet, plainFitness.diet]);
 
   const Stack = createStackNavigator();
 
   const color = (r: number, g: number, b: number) =>
-  `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
+    `rgb(${r * 255}, ${g * 255}, ${b * 255})`;
 
   const [dataSetIndex, setDataSetIndex] = useState(0);
   const dataSetOptions = ["Today", "Week", "Month"];
@@ -216,44 +216,50 @@ export default function HomeScreen() {
   ];
 
   const generateMonthData = () => {
-  const daysInMonth = 30;
-  const data: ChartDataPoint[] = [];
+    const daysInMonth = 30;
+    const data: ChartDataPoint[] = [];
 
-  for (let i = 1; i <= daysInMonth; i++) {
-    // TRUQUE: Para os dias que não queremos o número, enviamos 
-    // uma quantidade de espaços vazios igual ao número do dia.
-    // O SwiftUI entende como um ID único, mas o usuário não vê nada.
-    const label = i;
+    for (let i = 1; i <= daysInMonth; i++) {
+      // TRUQUE: Para os dias que não queremos o número, enviamos 
+      // uma quantidade de espaços vazios igual ao número do dia.
+      // O SwiftUI entende como um ID único, mas o usuário não vê nada.
+      const label = i;
 
-    data.push({
-      x: String(label), 
-      y: (Math.floor(Math.random() * (5 - 2 + 1)) + 2) * 100
-    });
-  }
-  return data;
-};
+      data.push({
+        x: String(label),
+        y: (Math.floor(Math.random() * (5 - 2 + 1)) + 2) * 100
+      });
+    }
+    return data;
+  };
 
   const monthData = generateMonthData();
 
   const lostCalories = () => {
-    if(chartType === "Today") {
+    if (chartType === "Today") {
       return plainFitness.training + plainFitness.movement
-    } else if(chartType === "Week") {
+    } else if (chartType === "Week") {
       return weekData.reduce((acc, item) => acc + item.y, 0)
-    } else if(chartType === "Month") {
+    } else if (chartType === "Month") {
       return monthData.reduce((acc, item) => acc + item.y, 0)
     }
   }
 
-   const totalOverDiet = () => {
-    if(chartType === "Today") {
+  const totalOverDiet = () => {
+    if (chartType === "Today") {
       return overDiet2
-    } else if(chartType === "Week") {
+    } else if (chartType === "Week") {
       return 300
-    } else if(chartType === "Month") {
+    } else if (chartType === "Month") {
       return 900
+    } else {
+      return 0
     }
-   }
+  }
+
+  const totalDayLost = () => {
+    return lostCalories() - totalOverDiet()
+  }
 
   return (
     <Content>
@@ -277,52 +283,55 @@ export default function HomeScreen() {
           />
         </Host>
       </View>
-      {(chartType === "Week" || chartType === "Month")  && (<Card style={{ display:'flex', flex: 1, }}>
+      {(chartType === "Week" || chartType === "Month") && (<Card style={{ display: 'flex', flex: 1, }}>
         <View style={styles.chartContainer}>
-            <BarChart rawMonthData={chartType === "Week" ? weekData : monthData} />
+          <BarChart rawMonthData={chartType === "Week" ? weekData : monthData} />
         </View>
       </Card>)}
       {chartType === "Today" && (
         <>
-      <Card style={{ display:'flex', flexDirection: 'row'}}>
-        <View style={{height: 200, width: '50%' }}>
-          <GestureHandlerRootView style={{height: 200 }}>
-            <Rings 
-              totalProgressMovement={plainFitness.movement/totalMovement} 
-              totalTraining={plainFitness.training/totalTraining}
-              totalProgressDiet={plainFitness.diet/totalDiet}
-            />
-          </GestureHandlerRootView>
-        </View>
-        <View style={{ display: 'flex', justifyContent: 'center', marginLeft: 10 }}>
-          <View style={{ marginBottom: 10 }}>
-            <Text style={{ fontSize: 15 }}>(-) Movement</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(77,94,10)` }}>{plainFitness.movement}/{totalMovement}</Text>
-          </View>
-          <View style={{ marginBottom: 10 }}>
-            <Text style={{ fontSize: 15 }}>(+) Diet</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: plainFitness.diet > totalDiet ?  `rgb(141,49,17)` : `rgb(115,141,17)` }}>{plainFitness.diet}/{totalDiet}</Text>
-          </View>
-          <View>
-            <Text style={{ fontSize: 15 }}>(-) Training</Text>
-            <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(150,183,25)` }}>{plainFitness.training}/{totalTraining}</Text>
-          </View>
-        </View>
-      </Card>
-      <Card style={{ display: 'flex', flexDirection: 'row', marginTop: 20, paddingBottom:10, justifyContent: 'space-between' }}>
-        <View style={styles.container}>
-          <View style={{ flexDirection: 'row' }}>
-            <Text>Daily Meta</Text><Text style={{ fontWeight: 'bold', marginLeft: 5 }}>400 kcal</Text>
-          </View>
-          <StatusBar hidden />
-          <Progress current={plainFitness.training+plainFitness.movement} meta={400} overDiet={overDiet2} height={20} />
-        </View>
-      </Card></>)}
+          <Card style={{ display: 'flex', flexDirection: 'row' }}>
+            <View style={{ height: 200, width: '50%' }}>
+              <GestureHandlerRootView style={{ height: 200 }}>
+                <Rings
+                  totalProgressMovement={plainFitness.movement / totalMovement}
+                  totalTraining={plainFitness.training / totalTraining}
+                  totalProgressDiet={plainFitness.diet / totalDiet}
+                />
+              </GestureHandlerRootView>
+            </View>
+            <View style={{ display: 'flex', justifyContent: 'center', marginLeft: 10 }}>
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ fontSize: 15 }}>(-) Movement</Text>
+                <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(77,94,10)` }}>{plainFitness.movement}/{totalMovement}</Text>
+              </View>
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ fontSize: 15 }}>(+) Diet</Text>
+                <Text style={{ fontSize: 20, fontWeight: 500, color: plainFitness.diet > totalDiet ? `rgb(141,49,17)` : `rgb(115,141,17)` }}>{plainFitness.diet}/{totalDiet}</Text>
+              </View>
+              <View>
+                <Text style={{ fontSize: 15 }}>(-) Training</Text>
+                <Text style={{ fontSize: 20, fontWeight: 500, color: `rgb(150,183,25)` }}>{plainFitness.training}/{totalTraining}</Text>
+              </View>
+            </View>
+          </Card>
+          <Card style={{ display: 'flex', flexDirection: 'row', marginTop: 20, paddingBottom: 5, justifyContent: 'space-between' }}>
+            <View style={styles.container}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text>Daily Meta</Text><Text style={{ fontWeight: 'bold', marginLeft: 5 }}>400 kcal</Text>
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 5 }}>
+                <Text>Calories losted today</Text><Text style={{ color: totalDayLost() >= 0 ? 'rgb(115,141,17)' : 'rgb(141,49,17)', fontWeight: 'bold', marginLeft: 5 }}>{totalDayLost()} kcal</Text>
+              </View>
+              <StatusBar hidden />
+              <Progress current={plainFitness.training + plainFitness.movement} meta={400} overDiet={overDiet2} height={20} />
+            </View>
+          </Card></>)}
       <View style={{ display: 'flex', flexDirection: 'row', marginTop: 20, justifyContent: 'space-between' }}>
         <Card style={{ width: '48%', padding: 15 }}>
           <Text>Lost Calories</Text>
           <Text>
-          <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{lostCalories()}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
+            <Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', fontSize: 25 }}>{lostCalories()}</Text><Text style={{ color: 'rgb(115,141,17)', fontWeight: 'bold', }}> Kcal</Text>
           </Text>
         </Card>
         <Card style={{ width: '48%', padding: 15 }}>
@@ -385,20 +394,20 @@ export default function HomeScreen() {
                         text="Concordo com a Política de Privacidade"
                         onPress={
                           (isChecked) => {
-                            if(item.type === 'training') {
-                            if(isChecked){
-                              dispatch(incrementTraining(item.value))
-                            } else {
-                              dispatch(decrementTraining(item.value))
-                            }
-                          } else if(item.type === 'movement') {
-                            if(isChecked){
-                              dispatch(incrementMovement(item.value))
-                            } else {
-                              dispatch(decrementMovement(item.value))
+                            if (item.type === 'training') {
+                              if (isChecked) {
+                                dispatch(incrementTraining(item.value))
+                              } else {
+                                dispatch(decrementTraining(item.value))
+                              }
+                            } else if (item.type === 'movement') {
+                              if (isChecked) {
+                                dispatch(incrementMovement(item.value))
+                              } else {
+                                dispatch(decrementMovement(item.value))
+                              }
                             }
                           }
-                        }
                         }
                       />
                     </View>
@@ -458,7 +467,7 @@ export default function HomeScreen() {
                         text="Concordo com a Política de Privacidade"
                         onPress={
                           (isChecked) => {
-                            if(isChecked){
+                            if (isChecked) {
                               dispatch(incrementDiet(item.value))
                             } else {
                               dispatch(decrementDiet(item.value))

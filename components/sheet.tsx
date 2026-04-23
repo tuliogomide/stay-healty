@@ -39,7 +39,7 @@ export default function SheetScreen() {
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        paddingTop: 40,
+        paddingTop: 20,
         paddingBottom: 100
       }}
     >

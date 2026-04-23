@@ -29,7 +29,7 @@ export default function RootLayout() {
             name="sheet"
             options={{
               presentation: "formSheet",
-              sheetAllowedDetents: [0.50, 0.5],
+              sheetAllowedDetents: [0.50, 1],
               sheetGrabberVisible: true,
               contentStyle: {
                 backgroundColor: isLiquidGlassAvailable() ? "transparent" : "white",
@@ -41,9 +41,10 @@ export default function RootLayout() {
             name="add-diet"
             options={{
               presentation: "formSheet",
-              sheetAllowedDetents: [0.50, 0.5],
+              sheetAllowedDetents: [0.50, 1],
               sheetGrabberVisible: true,
               contentStyle: {
+                paddingTop: 20,
                 backgroundColor: isLiquidGlassAvailable() ? "transparent" : "white",
               },
               headerShown: false,
