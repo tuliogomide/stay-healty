@@ -41,15 +41,19 @@ export default function InputIA({ setCalories, setName, setIngredients }: { setC
 
     try {
       setLoading(true)
-      const responseLLM = await llm.sendMessage('You are a nutrition assistant. Analyze the food shown in the image and estimate the calories. Return ONLY a valid JSON object with this exact structure: { "array_ingredients": [ { "name": "string", "estimated_calories": number } ], meal_name_suggest: string, total_meal_calories: number }', {
+      const responseLLM = await llm.sendMessage('You are a accurate professional nutrition assistant. Analyze the food shown in the image and estimate the calories. Return ONLY a valid JSON object with this exact structure: { "describe_context_about_the_picture": "string", "explain_if_this_picture_is_about_food": string, "array_ingredients": [{ "name": "string", "estimated_calories": number }], "possible_dish_name": string, is_about_food: boolean, total_meal_calories: number }', {
         imagePath: imageUri ?? undefined,
       });
+
+
       const jsonResponse = safeParse(responseLLM)
       console.log(jsonResponse)
-      setResponse(jsonResponse)
-      setCalories(String(jsonResponse.total_meal_calories))
-      setName(jsonResponse.meal_name_suggest)
-      setIngredients(jsonResponse.array_ingredients)
+      if (jsonResponse.is_about_food) {
+        setResponse(jsonResponse)
+        setCalories(String(jsonResponse.total_meal_calories))
+        setName(jsonResponse.possible_dish_name)
+        setIngredients(jsonResponse.array_ingredients)
+      }
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error)
     } finally {
@@ -74,7 +78,7 @@ export default function InputIA({ setCalories, setName, setIngredients }: { setC
     llm.configure({
       chatConfig: {
         systemPrompt:
-          "Você é um assistente útil e prestativo. Responda sempre em português de forma clara e concisa."
+          "You are a helpful assistant. Always respond in Portuguese in a clear and concise manner."
       },
     })
   }, [llm.isReady])
@@ -132,13 +136,13 @@ export default function InputIA({ setCalories, setName, setIngredients }: { setC
         />
       )}
 
-        {/* llm.response && <View style={[styles.messageContainer, styles.assistantMessage]}>
+      {/* llm.response && <View style={[styles.messageContainer, styles.assistantMessage]}>
           <Text style={styles.messageRole}>Assistente</Text>
           <Text style={[styles.messageText, styles.messageText]}>
             {JSON.stringify(response)}
           </Text>
         </View> */}
-        {!llm.isReady && (
+      {!llm.isReady && (
         <View style={{ alignItems: "center", marginTop: 20 }}>
           <Text style={{ fontWeight: "bold" }}>Loading IA Model</Text>
           <Text>
